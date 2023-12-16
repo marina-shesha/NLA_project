@@ -9,7 +9,7 @@ class TrainConfig:
     train_batch_size = 512
     eval_batch_size = 512
 
-    num_epoches = 500
+    num_epoches = 5
     momentum_beta = 0.9
     label_smoothig = 0.1
     learning_rate = 2000
@@ -18,7 +18,7 @@ class TrainConfig:
     base_regularization_coeff = 1e-4
     final_regularization_coeff = 1e-10
     coeff_adjusting_policy = "exp"
-    num_regularizer_decreasing_steps = 30
+    num_regularizer_decreasing_steps = 3
 
     checkpoint_path = "checkpoints/"
 
@@ -35,8 +35,8 @@ class TrainConfig:
 
 @dataclass
 class TuneConfig:
-    num_tunning_runs = 5
-    num_run_epochs = 30
+    num_tunning_runs = 2
+    num_run_epochs = 2
 
     relation_rank_inc = 0
     entity_rank_inc = 1
