@@ -1,6 +1,6 @@
 import sys
-
 sys.path.insert(0, "../")
+
 
 import argparse
 import wandb
@@ -19,6 +19,9 @@ from src.data.Data import Data
 from src.utils.utils import set_random_seed, filter_predictions, get_rank_approximation, Timer
 from src.utils.metrics import metrics
 from configs.base_config import Config
+from configs.base_config import LogConfig
+
+assert LogConfig.entity_name and LogConfig.project_name, "Add WandB entity_name and project_name in config"
 
 
 def define_optimizer(model, cfg):
@@ -68,7 +71,6 @@ def wandb_log(state, **kwargs):
             "grad_norm": state.losses.norms[-1],
             **kwargs
         })
-    
 
 
 def train_one_epoch(model, optimizer, criterion, train_loader, regularization_coeff=1e-4):
