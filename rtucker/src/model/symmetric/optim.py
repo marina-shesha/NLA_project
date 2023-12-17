@@ -20,7 +20,7 @@ class RGD(Optimizer):
         self.direction = None
         self.loss = None
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
                 Computes the Riemannian gradient of `loss_fn` at point `x_k`.
@@ -65,7 +65,7 @@ class RSGDwithMomentum(RGD):
         self.momentum_beta = momentum_beta
         self.momentum = None
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
@@ -119,7 +119,7 @@ class SFTuckerAdam(RGD):
         
         self.step_t = 1
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
@@ -163,19 +163,18 @@ class SFTuckerAdam(RGD):
         W.data.add_(x_k.core - W)
         R.data.add_(x_k.regular_factors[0] - R)
         E.data.add_(x_k.shared_factor - E)
-        
+
         self.step_t += 1
-        
-        
+
+
 class SFTuckerRMSPROP(RGD):
     def __init__(self, params, rank, max_lr, beta=0.999, eps=1e-8):
         super().__init__(params, rank, max_lr)
         self.betas = betas
         self.eps = eps
         self.step_velocity = step_velocity
-        
         self.second_momentum = torch.zeros(1, device="cuda")
-        
+
         self.step_t = 1
 
     def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
@@ -193,58 +192,9 @@ class SFTuckerRMSPROP(RGD):
         rgrad_norm = rgrad.norm().detach()
         self.second_momentum = self.beta * self.second_momentum + (1 - self.beta) * rgrad_norm ** 2
         bias_correction_ratio = torch.sqrt(self.second_momentum) + self.eps
-    
+
         self.direction = (1 / bias_correction_ratio) * self.rgrad
-        return rgrad_norm
 
-    @torch.no_grad()
-    def step(self, closure=None):
-        """Performs a single optimization step.
-
-        Parameters:
-        -----------
-        closure: callable
-            A closure that reevaluates the model and returns the loss.
-        """
-        W, E, R = self.param_groups[0]["params"]
-
-        x_k = self.direction.point
-        x_k = (-self.param_groups[0]["lr"]) * self.direction + SFTuckerRiemannian.TangentVector(x_k)
-        x_k = x_k.construct().round(self.rank)
-
-        W.data.add_(x_k.core - W)
-        R.data.add_(x_k.regular_factors[0] - R)
-        E.data.add_(x_k.shared_factor - E)
-        
-        self.step_t += 1
-
-
-class RSGDwithNesterovMomentum(RGD):
-    def __init__(self, params, rank, max_lr, momentum_beta=0.9):
-        super().__init__(params, rank, max_lr)
-        self.momentum_beta = momentum_beta
-        self.momentum = None
-
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
-            normalize_grad: Union[float, "False"] = 1.):
-        """
-        Computes the Riemannian gradient of `loss_fn` at point `x_k`.
-
-        :param loss_fn: smooth scalar-valued loss function
-        :param x_k: current solution approximation
-        :param normalize_grad: Can be `False` or float. If `False`, the Riemannian gradient will not be normalized. Otherwise, gradient will
-         be normalized to `normalize_grad`.
-        :return: Frobenius norm of the Riemannian gradient.
-        """  
-        if self.direction is None:
-            self.momentum = SFTuckerRiemannian.TangentVector(x_k,  torch.zeros_like(x_k.core))
-        else:
-            self.momentum = SFTuckerRiemannian.project(x_k, self.momentum.construct(), retain_graph=True)
-        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, (SFTuckerRiemannian.TangentVector(x_k) + -self.momentum_beta * self.momentum).construct().round(self.rank), retain_graph=True)
-        rgrad_norm = rgrad.norm().detach()
-        normalize_grad = rgrad_norm if not normalize_grad else normalize_grad
-        self.direction = (1 / rgrad_norm * normalize_grad) * rgrad + self.momentum_beta * self.momentum
-        self.momentum = self.direction
         return self.direction.norm().detach()
 
     @torch.no_grad()
@@ -266,5 +216,58 @@ class RSGDwithNesterovMomentum(RGD):
         R.data.add_(x_k.regular_factors[0] - R)
         E.data.add_(x_k.shared_factor - E)
 
+        self.step_t += 1
 
 
+class RSGDwithNesterovMomentum(RGD):
+    def __init__(self, params, rank, max_lr, momentum_beta=0.9):
+        super().__init__(params, rank, max_lr)
+        self.momentum_beta = momentum_beta
+        self.momentum = None
+
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
+            normalize_grad: Union[float, "False"] = 1.):
+        """
+        Computes the Riemannian gradient of `loss_fn` at point `x_k`.
+
+        :param loss_fn: smooth scalar-valued loss function
+        :param x_k: current solution approximation
+        :param normalize_grad: Can be `False` or float. If `False`, the Riemannian gradient will not be normalized. Otherwise, gradient will
+         be normalized to `normalize_grad`.
+        :return: Frobenius norm of the Riemannian gradient.
+        """
+        if self.direction is None:
+            self.momentum = SFTuckerRiemannian.TangentVector(x_k,  torch.zeros_like(x_k.core))
+        else:
+            self.momentum = SFTuckerRiemannian.project(x_k, self.momentum.construct(), retain_graph=True)
+
+        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, (
+            SFTuckerRiemannian.TangentVector(x_k) + -self.momentum_beta * self.momentum
+        ).construct().round(self.rank), retain_graph=True)
+
+        rgrad_norm = rgrad.norm().detach()
+        normalize_grad = rgrad_norm if not normalize_grad else normalize_grad
+
+        self.direction = (1 / rgrad_norm * normalize_grad) * rgrad + self.momentum_beta * self.momentum
+        self.momentum = self.direction
+
+        return self.direction.norm().detach()
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        """Performs a single optimization step.
+
+        Parameters:
+        -----------
+        closure: callable
+            A closure that reevaluates the model and returns the loss.
+        """
+        W, E, R = self.param_groups[0]["params"]
+
+        x_k = self.direction.point
+        x_k = (-self.param_groups[0]["lr"]) * self.direction + SFTuckerRiemannian.TangentVector(x_k)
+        x_k = x_k.construct().round(self.rank)
+
+        W.data.add_(x_k.core - W)
+        R.data.add_(x_k.regular_factors[0] - R)
+        E.data.add_(x_k.shared_factor - E)
