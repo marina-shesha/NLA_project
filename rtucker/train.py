@@ -38,6 +38,8 @@ def define_optimizer(model, cfg):
         opt = SFTuckerAdam(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, step_velocity=1)
     elif OPT == "adadelta":
         opt = AdaDelta(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate)
+    elif OPT == "lrgeomcg":
+        opt = LRGeomCG(param_list, cfg.model_cfg.manifold_rank, 0.01)#cfg.train_cfg.learning_rate)
     else:
         raise NotImplementedError("Such optimization method is not implemented")
     return opt
@@ -244,7 +246,8 @@ if __name__ == '__main__':
 
     if MODE == "symmetric":
         from src.model.symmetric.optim import (RSGDwithMomentum, RGD,
-                                               SFTuckerAdam, AdaDelta)
+                                               SFTuckerAdam, AdaDelta,
+                                               LRGeomCG)
         from tucker_riemopt import SFTucker
         from src.model.symmetric.R_TuckER import R_TuckER
     else:

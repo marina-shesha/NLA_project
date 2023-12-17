@@ -98,7 +98,6 @@ def vec_div(lhs: TangentVector, rhs: TangentVector) -> TangentVector:
 def vec_mul(lhs: TangentVector, rhs: TangentVector) -> TangentVector:
     return bin_f_vec(lhs, rhs, lambda x, y : x * y)
 
-
 class AdaDelta(RGD):
     def __init__(self, params, rank, max_lr, betas=(0.1, 0.1), eps=1e-8):
         super().__init__(params, rank, max_lr)
@@ -119,11 +118,11 @@ class AdaDelta(RGD):
                  be normalized to `normalize_grad`.
                 :return: Frobenius norm of the Riemannian gradient.
                 """
-        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, x_k,
-                retain_graph=True)
+        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, x_k)
+                # retain_graph=True)
         # rgrad_norm = rgrad.norm().detach()
 
-        if self.second_momentum:
+        if self.second_momentum is not None:
             self.second_momentum = (
                 self.betas[1] * self.second_momentum +
                 (1 - self.betas[1]) * sq_vec(rgrad)
@@ -133,7 +132,7 @@ class AdaDelta(RGD):
                 (1 - self.betas[1]) * sq_vec(rgrad)
             )
 
-        if not self.momentum:
+        if self.momentum is not None:
             self.momentum = TangentVector(x_k, torch.zeros_like(x_k.core))
 
         self.direction = SFTuckerRiemannian.project(
@@ -149,7 +148,7 @@ class AdaDelta(RGD):
                 ),
                 rgrad
             ).construct(),
-            retain_graph=True
+            # retain_graph=True
         )
 
         self.momentum = (
@@ -179,13 +178,83 @@ class AdaDelta(RGD):
         E.data.add_(x_k.shared_factor - E)
 
 
+class LRGeomCG(RGD):
+    def __init__(self, params, rank, max_lr, betas=(0.1, 0.1), eps=1e-8):
+        super().__init__(params, rank, max_lr)
+        self.betas = betas
+        self.eps = eps
+
+        self.xi = None
+        self.eta = None
+        self.t = 0
+
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
+            normalize_grad: Union[float, "False"] = 1.):
+        """
+                Computes the Riemannian gradient of `loss_fn` at point `x_k`.
+
+                :param loss_fn: smooth scalar-valued loss function
+                :param x_k: current solution approximation
+                :param normalize_grad: Can be `False` or float. If `False`, the Riemannian gradient will not be normalized. Otherwise, gradient will
+                 be normalized to `normalize_grad`.
+                :return: Frobenius norm of the Riemannian gradient.
+                """
+        self.xi, self.loss = SFTuckerRiemannian.grad(loss_fn, x_k,
+                retain_graph=True)
+
+        if self.eta is not None:
+            xi_constructed = self.xi.construct()
+            xi_transported = SFTuckerRiemannian.project(x_k, xi_constructed,
+                    retain_graph=True)
+            eta_transported = SFTuckerRiemannian.project(x_k,
+                    self.eta.construct(), retain_graph=True)
+
+            delta = self.xi + (-xi_transported)
+            beta = max(0, delta.construct().flat_inner(xi_constructed) /
+                    xi_constructed.flat_inner(xi_constructed))
+
+            self.eta = -self.xi + beta * eta_transported
+        else:
+            self.eta = -self.xi
+
+        eta_tensor = self.eta.construct()
+        self.t = -eta_tensor.flat_inner(x_k) / eta_tensor.flat_inner(eta_tensor)
+
+        return self.t * self.eta.norm().detach()
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        """Performs a single optimization step.
+
+        Parameters:
+        -----------
+        closure: callable
+            A closure that reevaluates the model and returns the loss.
+        """
+        assert self.xi
+
+        W, E, R = self.param_groups[0]["params"]
+
+        x_k = self.xi.point
+        x_k = (
+            -self.param_groups[0]["lr"] * 0.5 * self.t * self.eta +
+            SFTuckerRiemannian.TangentVector(x_k)
+        )
+        x_k = x_k.construct().round(self.rank)
+
+
+        W.data.add_(x_k.core - W)
+        R.data.add_(x_k.regular_factors[0] - R)
+        E.data.add_(x_k.shared_factor - E)
+
+
 class RSGDwithMomentum(RGD):
     def __init__(self, params, rank, max_lr, momentum_beta=0.9):
         super().__init__(params, rank, max_lr)
         self.momentum_beta = momentum_beta
         self.momentum = None
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
@@ -233,13 +302,13 @@ class SFTuckerAdam(RGD):
         self.betas = betas
         self.eps = eps
         self.step_velocity = step_velocity
-        
+
         self.momentum = None
         self.second_momentum = torch.zeros(1, device="cuda")
-        
+
         self.step_t = 1
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
