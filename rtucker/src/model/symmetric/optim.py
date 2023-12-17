@@ -187,6 +187,7 @@ class LRGeomCG(RGD):
         self.xi = None
         self.eta = None
         self.t = 0
+        self.prev_xi = None
 
     def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
@@ -202,16 +203,19 @@ class LRGeomCG(RGD):
         self.xi, self.loss = SFTuckerRiemannian.grad(loss_fn, x_k,
                 retain_graph=True)
 
+        if self.prev_xi is None:
+            self.prev_xi = self.xi
+
         if self.eta is not None:
-            xi_constructed = self.xi.construct()
-            xi_transported = SFTuckerRiemannian.project(x_k, xi_constructed,
+            prev_xi_constructed = self.prev_xi.construct()
+            xi_transported = SFTuckerRiemannian.project(x_k, prev_xi_constructed,
                     retain_graph=True)
             eta_transported = SFTuckerRiemannian.project(x_k,
                     self.eta.construct(), retain_graph=True)
 
             delta = self.xi + (-xi_transported)
-            beta = max(0, delta.construct().flat_inner(xi_constructed) /
-                    xi_constructed.flat_inner(xi_constructed))
+            beta = max(0, delta.construct().flat_inner(self.xi.construct()) /
+                prev_xi_constructed.flat_inner(prev_xi_constructed))
 
             self.eta = -self.xi + beta * eta_transported
         else:
@@ -219,6 +223,8 @@ class LRGeomCG(RGD):
 
         eta_tensor = self.eta.construct()
         self.t = -eta_tensor.flat_inner(x_k) / eta_tensor.flat_inner(eta_tensor)
+
+        self.prev_xi = self.xi
 
         return self.t * self.eta.norm().detach()
 
@@ -237,7 +243,7 @@ class LRGeomCG(RGD):
 
         x_k = self.xi.point
         x_k = (
-            -self.param_groups[0]["lr"] * 0.5 * self.t * self.eta +
+            self.param_groups[0]["lr"] * 0.5 * self.t * self.eta +
             SFTuckerRiemannian.TangentVector(x_k)
         )
         x_k = x_k.construct().round(self.rank)
