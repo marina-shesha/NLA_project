@@ -9,8 +9,9 @@ class TrainConfig:
     train_batch_size = 512
     eval_batch_size = 512
 
-    num_epoches = 500
+    num_epoches = 5
     momentum_beta = 0.9
+    rmsprop_beta = 0.999
     label_smoothig = 0.1
     learning_rate = 2000
     scheduler_step = 0.933
@@ -66,13 +67,8 @@ class ModelConfig:
 
 @dataclass
 class LogConfig:
-<<<<<<< Updated upstream
-    project_name = None
-    entity_name = None
-=======
     project_name = "NLA_BASE_TRAIN"
     entity_name = "marina_shesha"
->>>>>>> Stashed changes
     run_name = "(200, 20) 10, 5 tune"
     log_dir = "wandb_logs"
 

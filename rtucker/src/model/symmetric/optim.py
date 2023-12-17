@@ -170,9 +170,8 @@ class SFTuckerAdam(RGD):
 class SFTuckerRMSPROP(RGD):
     def __init__(self, params, rank, max_lr, beta=0.999, eps=1e-8):
         super().__init__(params, rank, max_lr)
-        self.betas = betas
+        self.beta = beta
         self.eps = eps
-        self.step_velocity = step_velocity
         
         self.second_momentum = torch.zeros(1, device="cuda")
         
@@ -194,7 +193,7 @@ class SFTuckerRMSPROP(RGD):
         self.second_momentum = self.beta * self.second_momentum + (1 - self.beta) * rgrad_norm ** 2
         bias_correction_ratio = torch.sqrt(self.second_momentum) + self.eps
     
-        self.direction = (1 / bias_correction_ratio) * self.rgrad
+        self.direction = (1 / bias_correction_ratio) * rgrad
         return rgrad_norm
 
     @torch.no_grad()
@@ -217,3 +216,4 @@ class SFTuckerRMSPROP(RGD):
         E.data.add_(x_k.shared_factor - E)
         
         self.step_t += 1
+        

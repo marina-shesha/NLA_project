@@ -45,3 +45,13 @@ class R_TuckER(nn.Module):
             return torch.sigmoid(preds)
 
         return score_fn
+    
+class SmoothL1loss(nn.Module):
+    def __init__(self, decay=0.9):
+        super().__init__(params, rank, max_lr)
+        self.decay = decay
+        self.delta = decay
+    def forward(pred, target):
+        loss = torch.sqrt(self.delta + (pred-target)**2)
+        self.delta *= decay
+        return loss

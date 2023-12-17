@@ -37,7 +37,7 @@ def define_optimizer(model, cfg):
     elif OPT == "adam":
         opt = SFTuckerAdam(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, step_velocity=1)
     elif OPT == 'rmsprop':
-         opt = SFTuckerRMSPROP(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate)
+         opt = SFTuckerRMSPROP(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, beta=cfg.train_cfg.rmsprop_beta)
     else:
         raise NotImplementedError("Such optimization method is not implemented")
     return opt
@@ -84,7 +84,7 @@ def train_one_epoch(model, optimizer, criterion, train_loader, regularization_co
             features, targets = features.to(DEVICE, non_blocking=True), targets.to(DEVICE, non_blocking=True)
 
             score_fn = model(features[:, 0], features[:, 1])
-            loss_fn = lambda T: criterion(score_fn(T), targets)# + regularization_coeff * T.norm()
+            loss_fn = lambda T: criterion(score_fn(T), targets) + regularization_coeff * T.norm()
             x_k = extract_tensor(model)
 
             grad_norm = optimizer.fit(loss_fn, x_k)
@@ -141,7 +141,7 @@ def train(model, optimizer, train_loader, val_loader, test_loader, config: Confi
     num_epoches = config.train_cfg.num_epoches
     start_epoch = 1 if not config.state_dict else config.state_dict.last_epoch
 
-    criterion = nn.BCELoss(reduction="mean")
+    criterion = SmoothL1loss()#nn.BCELoss(reduction="mean")
     prev_val_mrr = evaluate(model, criterion, val_loader)[0]["mrr"]
     for epoch in range(start_epoch, num_epoches + start_epoch):
         regularization_coeff = regulizer.step()
@@ -246,6 +246,7 @@ if __name__ == '__main__':
         from src.model.symmetric.optim import RSGDwithMomentum, RGD, SFTuckerAdam, SFTuckerRMSPROP
         from tucker_riemopt import SFTucker
         from src.model.symmetric.R_TuckER import R_TuckER
+        from src.model.symmetric.R_TuckER import SmoothL1loss
     else:
         from src.model.asymmetric.optim import RSGDwithMomentum
         from tucker_riemopt import Tucker
