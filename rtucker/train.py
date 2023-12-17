@@ -38,6 +38,8 @@ def define_optimizer(model, cfg):
         opt = SFTuckerAdam(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, step_velocity=1)
     elif OPT == 'rmsprop':
          opt = SFTuckerRMSPROP(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate)
+    elif OPT == "rsgdn":
+        opt = RSGDwithNesterovMomentum(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, cfg.train_cfg.momentum_beta)
     else:
         raise NotImplementedError("Such optimization method is not implemented")
     return opt
@@ -243,7 +245,7 @@ if __name__ == '__main__':
         args["mode"], args["seed"], args["nw"], args["device"], args["optim"], args["data"], args["tune"]
 
     if MODE == "symmetric":
-        from src.model.symmetric.optim import RSGDwithMomentum, RGD, SFTuckerAdam, SFTuckerRMSPROP
+        from src.model.symmetric.optim import RSGDwithMomentum, RGD, SFTuckerAdam, SFTuckerRMSPROP, RSGDwithNesterovMomentum
         from tucker_riemopt import SFTucker
         from src.model.symmetric.R_TuckER import R_TuckER
     else:
