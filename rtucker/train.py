@@ -40,6 +40,8 @@ def define_optimizer(model, cfg):
          opt = SFTuckerRMSPROP(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate)
     elif OPT == "rsgdn":
         opt = RSGDwithNesterovMomentum(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, cfg.train_cfg.momentum_beta)
+    elif OPT == 'adamr':
+         opt = SFTuckerAdamReg(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, cfg.train_cfg.decay)
     else:
         raise NotImplementedError("Such optimization method is not implemented")
     return opt

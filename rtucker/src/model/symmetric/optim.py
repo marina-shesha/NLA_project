@@ -167,6 +167,68 @@ class SFTuckerAdam(RGD):
         self.step_t += 1
 
 
+class SFTuckerAdamReg(RGD):
+    def __init__(self, params, rank, max_lr, betas=(0.9, 0.999), eps=1e-8, step_velocity=1, decay=1e-2):
+        super().__init__(params, rank, max_lr)
+        self.betas = betas
+        self.eps = eps
+        self.step_velocity = step_velocity
+        
+        self.momentum = None
+        self.second_momentum = torch.zeros(1, device="cuda")
+        
+        self.step_t = 1
+        self.decay = decay
+
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+            normalize_grad: Union[float, "False"] = 1.):
+        """
+        Computes the Riemannian gradient of `loss_fn` at point `x_k`.
+
+        :param loss_fn: smooth scalar-valued loss function
+        :param x_k: current solution approximation
+        :param normalize_grad: Can be `False` or float. If `False`, the Riemannian gradient will not be normalized. Otherwise, gradient will
+         be normalized to `normalize_grad`.
+        :return: Frobenius norm of the Riemannian gradient.
+        """
+        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, x_k)
+        rgrad_norm = rgrad.norm().detach()
+        if self.momentum is not None:
+            self.momentum = SFTuckerRiemannian.project(x_k, self.momentum.construct())
+            self.momentum = self.betas[0] * self.momentum + (1 - self.betas[0]) * rgrad
+        else:
+            self.momentum = (1 - self.betas[0]) * rgrad
+        self.second_momentum = self.betas[1] * self.second_momentum + (1 - self.betas[1]) * rgrad_norm ** 2
+        second_momentum_corrected = self.second_momentum / (1 - self.betas[1] ** (self.step_t // self.step_velocity + 1))
+        bias_correction_ratio = (1 - self.betas[0] ** (self.step_t // self.step_velocity + 1)) * torch.sqrt(
+            second_momentum_corrected
+        ) + self.eps
+        self.direction = (1 / bias_correction_ratio) * self.momentum
+        return rgrad_norm
+
+    @torch.no_grad()
+    def step(self, closure=None):
+        """Performs a single optimization step.
+
+        Parameters:
+        -----------
+        closure: callable
+            A closure that reevaluates the model and returns the loss.
+        """
+        W, E, R = self.param_groups[0]["params"]
+        lr = self.param_groups[0]["lr"]
+
+        x_k = self.direction.point
+        x_k = -lr * self.direction + SFTuckerRiemannian.TangentVector(x_k)
+        x_k = x_k.construct().round(self.rank)
+
+        W.data.add_(x_k.core - W * (1 - lr * self.decay))
+        R.data.add_(x_k.regular_factors[0] - R * (1 - lr * self.decay))
+        E.data.add_(x_k.shared_factor - E * (1 - lr * self.decay))
+        
+        self.step_t += 1
+
+
 class SFTuckerRMSPROP(RGD):
     def __init__(self, params, rank, max_lr, beta=0.999, eps=1e-8):
         super().__init__(params, rank, max_lr)
