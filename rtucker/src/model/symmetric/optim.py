@@ -209,9 +209,9 @@ class LRGeomCG(RGD):
         if self.eta is not None:
             prev_xi_constructed = self.prev_xi.construct()
             xi_transported = SFTuckerRiemannian.project(x_k, prev_xi_constructed,
-                    retain_graph=True)
+                retain_graph=True)
             eta_transported = SFTuckerRiemannian.project(x_k,
-                    self.eta.construct(), retain_graph=True)
+                self.eta.construct(), retain_graph=True)
 
             delta = self.xi + (-xi_transported)
             beta = max(0, delta.construct().flat_inner(self.xi.construct()) /
@@ -221,8 +221,8 @@ class LRGeomCG(RGD):
         else:
             self.eta = -self.xi
 
-        eta_tensor = self.eta.construct()
-        self.t = -eta_tensor.flat_inner(x_k) / eta_tensor.flat_inner(eta_tensor)
+        # eta_tensor = self.eta.construct()
+        self.t = 0.01 # -eta_tensor.flat_inner(x_k) / eta_tensor.flat_inner(eta_tensor)
 
         self.prev_xi = self.xi
 
