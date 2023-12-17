@@ -168,7 +168,7 @@ class SFTuckerAdam(RGD):
         
         
 class SFTuckerRMSPROP(RGD):
-    def __init__(self, params, rank, max_lr, beta=0.999, eps=1e-8, step_velocity=1):
+    def __init__(self, params, rank, max_lr, beta=0.999, eps=1e-8):
         super().__init__(params, rank, max_lr)
         self.betas = betas
         self.eps = eps
