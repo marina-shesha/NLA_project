@@ -66,13 +66,8 @@ class ModelConfig:
 
 @dataclass
 class LogConfig:
-<<<<<<< Updated upstream
     project_name = None
     entity_name = None
-=======
-    project_name = "NLA_BASE_TRAIN"
-    entity_name = "marina_shesha"
->>>>>>> Stashed changes
     run_name = "(200, 20) 10, 5 tune"
     log_dir = "wandb_logs"
 

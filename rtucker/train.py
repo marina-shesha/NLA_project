@@ -116,12 +116,12 @@ def evaluate(model, criterion, dataloader):
             features, targets = features.to(DEVICE, non_blocking=True), targets.to(DEVICE, non_blocking=True)
             score_fn = model(features[:, 0], features[:, 1])
             x_k = extract_tensor(model)
-            
+
             predictions = score_fn(x_k)
             loss = criterion(predictions, targets)
             val_loss += loss.detach()
             filtered_preds, _ = filter_predictions(predictions, targets, features[:, 2].reshape(-1, 1))
-            
+
             batch_metrics = metrics(filtered_preds, targets)
             for key in batch_metrics.keys():
                 val_metrics[key] += batch_metrics[key]
@@ -133,8 +133,8 @@ def evaluate(model, criterion, dataloader):
     return val_metrics, val_loss / dataloader_len
 
 
-def train(model, optimizer, train_loader, val_loader, test_loader, config: Config, regulizer: RegularizationCoeffPolicy,
-          scheduler=None, ) -> StateDict:
+def train(model, optimizer, train_loader, val_loader, test_loader, config: Config,
+          regulizer: RegularizationCoeffPolicy, scheduler=None, ) -> StateDict:
     timer = Timer()
     losses = Losses() if not config.state_dict else config.state_dict.losses
     metrics = Metrics() if not config.state_dict else config.state_dict.metrics
@@ -147,7 +147,7 @@ def train(model, optimizer, train_loader, val_loader, test_loader, config: Confi
         regularization_coeff = regulizer.step()
         with timer:
             train_loss, train_norm = train_one_epoch(model, optimizer, criterion, train_loader,
-                                                    regularization_coeff=regularization_coeff)
+                                                     regularization_coeff=regularization_coeff)
         epoch_time = timer.time
 
         val_metrics, val_loss = evaluate(model, criterion, val_loader)
