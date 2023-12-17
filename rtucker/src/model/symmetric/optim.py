@@ -113,10 +113,10 @@ class SFTuckerAdam(RGD):
         self.betas = betas
         self.eps = eps
         self.step_velocity = step_velocity
-        
+
         self.momentum = None
         self.second_momentum = torch.zeros(1, device="cuda")
-        
+
         self.step_t = 1
 
     def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
@@ -177,7 +177,7 @@ class SFTuckerRMSPROP(RGD):
 
         self.step_t = 1
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
