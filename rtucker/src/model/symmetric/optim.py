@@ -238,7 +238,9 @@ class RSGDwithNesterovMomentum(RGD):
         """  
         if self.direction is None:
             self.momentum = SFTuckerRiemannian.TangentVector(x_k,  torch.zeros_like(x_k.core))
-        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, (SFTuckerRiemannian.TangentVector(x_k) + self.momentum_beta * self.momentum).construct().round(self.rank), retain_graph=True)
+        else:
+            self.momentum = SFTuckerRiemannian.project(x_k, self.momentum.construct(), retain_graph=True)
+        rgrad, self.loss = SFTuckerRiemannian.grad(loss_fn, (SFTuckerRiemannian.TangentVector(x_k) + -self.momentum_beta * self.momentum).construct().round(self.rank), retain_graph=True)
         rgrad_norm = rgrad.norm().detach()
         normalize_grad = rgrad_norm if not normalize_grad else normalize_grad
         self.direction = (1 / rgrad_norm * normalize_grad) * rgrad + self.momentum_beta * self.momentum
@@ -259,7 +261,6 @@ class RSGDwithNesterovMomentum(RGD):
         x_k = self.direction.point
         x_k = (-self.param_groups[0]["lr"]) * self.direction + SFTuckerRiemannian.TangentVector(x_k)
         x_k = x_k.construct().round(self.rank)
-        self.direction = self.direction.construct()
 
         W.data.add_(x_k.core - W)
         R.data.add_(x_k.regular_factors[0] - R)
