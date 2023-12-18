@@ -15,7 +15,7 @@ class TrainConfig:
     label_smoothig = 0.1
     learning_rate = 2000
     scheduler_step = 0.933
-    decay = 0.01
+    decay = 1e-5
 
     base_regularization_coeff = 1e-8
     final_regularization_coeff = 1e-14
