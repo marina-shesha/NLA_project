@@ -32,10 +32,10 @@ Our contribution consisted in implementing and extending several optimization me
 Moreover, we incorporated a smooth L1 loss, building upon the principles of Robust Low-Rank Matrix Completion through Riemannian Optimization. 
 
 
-# Requirements 
+## Requirements 
 Check `requirements.txt`
 
-# Tutorial (short example)
+## Tutorial (short example)
 1. Add wandb login and project to `rtucker/configs/base_config.py`
 2. `cd rtrucker`
 3. `python train.py --mode symmetric --optim rgd` (or other optimizers, which can be found in `train.py`)
