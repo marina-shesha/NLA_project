@@ -41,3 +41,14 @@ Check `requirements.txt`
 3. `python train.py --mode symmetric --optim rgd` (or other optimizers, which can be found in `train.py`)
 
 More examples can be found in `notebooks/experiment.ipynb`
+
+## References
+https://arxiv.org/pdf/1901.09590.pdf
+
+https://arxiv.org/pdf/1209.3834.pdf
+
+https://perso.uclouvain.be/pa.absil/Talks/ICIAM070717_oom_05.pdf
+
+https://arxiv.org/pdf/1707.01476.pdf
+
+http://proceedings.mlr.press/v48/kasai16.pdf
