@@ -15,6 +15,7 @@ class TrainConfig:
     label_smoothig = 0.1
     learning_rate = 2000
     scheduler_step = 0.933
+    decay = 0.01
 
     base_regularization_coeff = 1e-8
     final_regularization_coeff = 1e-14
@@ -67,8 +68,8 @@ class ModelConfig:
 
 @dataclass
 class LogConfig:
-    project_name = None
-    entity_name = None
+    project_name = 'nla_shit'
+    entity_name = 'ignat'
     run_name = "(200, 20) 10, 5 tune"
     log_dir = "wandb_logs"
 
