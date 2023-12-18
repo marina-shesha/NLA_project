@@ -9,14 +9,15 @@ class TrainConfig:
     train_batch_size = 512
     eval_batch_size = 512
 
-    num_epoches = 500
+    num_epoches = 50
     momentum_beta = 0.9
+    rmsprop_beta = 0.999
     label_smoothig = 0.1
     learning_rate = 2000
     scheduler_step = 0.933
 
-    base_regularization_coeff = 1e-4
-    final_regularization_coeff = 1e-10
+    base_regularization_coeff = 1e-8
+    final_regularization_coeff = 1e-14
     coeff_adjusting_policy = "exp"
     num_regularizer_decreasing_steps = 30
 
