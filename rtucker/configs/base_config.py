@@ -20,7 +20,7 @@ class TrainConfig:
     base_regularization_coeff = 1e-8
     final_regularization_coeff = 1e-14
     coeff_adjusting_policy = "exp"
-    num_regularizer_decreasing_steps = 30
+    num_regularizer_decreasing_steps = 3
 
     checkpoint_path = "checkpoints/"
 
@@ -37,8 +37,8 @@ class TrainConfig:
 
 @dataclass
 class TuneConfig:
-    num_tunning_runs = 5
-    num_run_epochs = 30
+    num_tunning_runs = 2
+    num_run_epochs = 2
 
     relation_rank_inc = 0
     entity_rank_inc = 1

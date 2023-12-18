@@ -42,6 +42,8 @@ def define_optimizer(model, cfg):
         opt = RSGDwithNesterovMomentum(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, cfg.train_cfg.momentum_beta)
     elif OPT == 'adamr':
          opt = SFTuckerAdamReg(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate, step_velocity=1, decay=cfg.train_cfg.decay)
+    elif OPT == "adadelta":
+        opt = AdaDelta(param_list, cfg.model_cfg.manifold_rank, cfg.train_cfg.learning_rate)
     else:
         raise NotImplementedError("Such optimization method is not implemented")
     return opt
@@ -247,12 +249,16 @@ if __name__ == '__main__':
         args["mode"], args["seed"], args["nw"], args["device"], args["optim"], args["data"], args["tune"]
 
     if MODE == "symmetric":
-        from src.model.symmetric.optim import RSGDwithMomentum, RGD, SFTuckerAdam, SFTuckerRMSPROP, RSGDwithNesterovMomentum, SFTuckerAdamReg
+        from src.model.symmetric.optim import (
+            RSGDwithMomentum, RGD, SFTuckerAdam, SFTuckerRMSPROP,
+            RSGDwithNesterovMomentum, SFTuckerAdamReg, AdaDelta)
+
         from tucker_riemopt import SFTucker
         from src.model.symmetric.R_TuckER import R_TuckER
         from src.model.symmetric.R_TuckER import SmoothL1loss
     else:
-        from src.model.asymmetric.optim import RSGDwithMomentum
+        from src.model.asymmetric.optim import (RSGDwithMomentum,
+                                                AdaDelta)
         from tucker_riemopt import Tucker
         from src.model.asymmetric.R_TuckER import R_TuckER
 
