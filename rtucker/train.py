@@ -145,7 +145,7 @@ def train(model, optimizer, train_loader, val_loader, test_loader, config: Confi
     num_epoches = config.train_cfg.num_epoches
     start_epoch = 1 if not config.state_dict else config.state_dict.last_epoch
 
-    criterion = SmoothL1loss()# nn.MSELoss() nn.BCELoss(reduction="mean")
+    criterion = nn.BCELoss(reduction="mean") # nn.MSELoss()  SmoothL1loss()
     prev_val_mrr = evaluate(model, criterion, val_loader)[0]["mrr"]
     for epoch in range(start_epoch, num_epoches + start_epoch):
         regularization_coeff = regulizer.step()
@@ -188,7 +188,7 @@ def tune(model, optimizer, train_loader, val_loader, test_loader, config: Config
     num_epoches = tune_cfg.num_run_epochs
     start_epoch = 1
 
-    criterion = SmoothL1loss()# nn.MSELoss() nn.BCELoss(reduction="mean")
+    criterion = nn.BCELoss(reduction="mean") # nn.MSELoss() SmoothL1loss()
     prev_val_mrr = evaluate(model, criterion, val_loader)[0]["mrr"]
     rank = list(config.model_cfg.manifold_rank)
     for run in range(1, num_runs + 1):

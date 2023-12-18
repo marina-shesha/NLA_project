@@ -68,8 +68,8 @@ class ModelConfig:
 
 @dataclass
 class LogConfig:
-    project_name = 'nla_shit'
-    entity_name = 'ignat'
+    project_name = None
+    entity_name = None
     run_name = "(200, 20) 10, 5 tune"
     log_dir = "wandb_logs"
 
