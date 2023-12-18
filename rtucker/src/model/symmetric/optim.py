@@ -173,14 +173,14 @@ class SFTuckerAdamReg(RGD):
         self.betas = betas
         self.eps = eps
         self.step_velocity = step_velocity
-        
+
         self.momentum = None
         self.second_momentum = torch.zeros(1, device="cuda")
-        
+
         self.step_t = 1
         self.decay = decay
 
-    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTuckerRiemannian,
+    def fit(self, loss_fn: Callable[[SFTucker], float], x_k: SFTucker,
             normalize_grad: Union[float, "False"] = 1.):
         """
         Computes the Riemannian gradient of `loss_fn` at point `x_k`.
@@ -225,7 +225,7 @@ class SFTuckerAdamReg(RGD):
         W.data.add_(x_k.core - W)
         R.data.add_(x_k.regular_factors[0] - R)
         E.data.add_(x_k.shared_factor - E)
-        
+
         self.step_t += 1
 
 
