@@ -43,12 +43,12 @@ Check `requirements.txt`
 More examples can be found in `notebooks/experiment.ipynb`
 
 ## References
-https://arxiv.org/pdf/1901.09590.pdf
+I. Balažević, C. Allen, T. M. Hospedales. TuckER: Tensor Factorization for Knowledge Graph Completion. 2019. https://arxiv.org/pdf/1901.09590.pdf
 
-https://arxiv.org/pdf/1209.3834.pdf
+B. Vandereycken. Low-rank matrix completion by Riemannian optimization—extended version. 2012. https://arxiv.org/pdf/1209.3834.pdf
 
-https://perso.uclouvain.be/pa.absil/Talks/ICIAM070717_oom_05.pdf
+P.-A. Absil, R. Mahony, R. Sepulchre. Vector Transport On Manifolds. 2007. https://perso.uclouvain.be/pa.absil/Talks/ICIAM070717_oom_05.pdf
 
-https://arxiv.org/pdf/1707.01476.pdf
+T. Dettmers. Convolutional 2D Knowledge Graph Embeddings. 2018. https://arxiv.org/pdf/1707.01476.pdf
 
-http://proceedings.mlr.press/v48/kasai16.pdf
+B. Mishra, H. Kasai. Low-rank tensor completion: a Riemannian manifold preconditioning approach. http://proceedings.mlr.press/v48/kasai16.pdf
