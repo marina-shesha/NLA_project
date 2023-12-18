@@ -1,10 +1,10 @@
-# NLA 2023 Final Project: Knowledge Graph Completion Using Riemann Optimization
+# NLA_project
 
 ## Introduction 
 
 Knowledge graphs (KGs) are large graph-structured databases that store facts in triple form, representing interlinked descriptions of entities, relationships, and semantic descriptions. These KGs provide structured knowledge that plays a vital role in knowledge-aware tasks such as recommendation systems, intelligent question-answering, recommender systems, and social network analysis. The effectiveness of these tasks heavily relies on the quality and completeness of the KGs. However, KGs often suffer from incompleteness, resulting in significant knowledge gaps. To address this, it is crucial to enhance existing KGs by supplementing missing knowledge to improve their overall quality and usefulness.
 
-## Our project - Leveraging Riemannian Optimization for Knowledge Graph Link Prediction
+## Our project - Leveraging TuckER for Knowledge Graph Link Prediction
 
 For this project, we utilize TuckER, a robust linear model based on Tucker decomposition of the binary tensor representation of knowledge graph triples. The implementation of TuckER can be found on GitHub at https://github.com/johanDDC/R-TuckER/tree/master. 
 
@@ -38,3 +38,10 @@ Moreover, we incorporated a smooth L1 loss, building upon the principles of Robu
 1. FB15k: This dataset is a subset of Freebase, a comprehensive real-world fact database. It comprises 592,213 triplets, involving 14,951 entities and 1,345 relationship types.
 
 2. FB15k-237: Derived from FB15k, this dataset is specifically designed to challenge simple models by removing the inverse of many relations present in the training set from the validation and test sets. It consists of 310,116 triplets, featuring 14,541 entities and 237 relation types.
+
+# Tutorial (short example)
+1. Add wandb login and project to `rtucker/configs/base_config.py`
+2. `cd rtrucker`
+3. `python train.py --mode symmetric --optim rgd` (or other optimizers, which can be found in `train.py`)
+
+More examples can be found in `notebooks/experiment.ipynb`
