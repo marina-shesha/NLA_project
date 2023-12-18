@@ -33,11 +33,7 @@ Moreover, we incorporated a smooth L1 loss, building upon the principles of Robu
 
 
 # Requirements 
-## Dataset Requirements
-
-1. FB15k: This dataset is a subset of Freebase, a comprehensive real-world fact database. It comprises 592,213 triplets, involving 14,951 entities and 1,345 relationship types.
-
-2. FB15k-237: Derived from FB15k, this dataset is specifically designed to challenge simple models by removing the inverse of many relations present in the training set from the validation and test sets. It consists of 310,116 triplets, featuring 14,541 entities and 237 relation types.
+Check `requirements.txt`
 
 # Tutorial (short example)
 1. Add wandb login and project to `rtucker/configs/base_config.py`
