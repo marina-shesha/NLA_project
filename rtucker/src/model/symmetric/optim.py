@@ -219,7 +219,7 @@ class SFTuckerAdamReg(RGD):
         lr = self.param_groups[0]["lr"]
 
         x_k = self.direction.point
-        x_k = -lr * self.direction + SFTuckerRiemannian.TangentVector(x_k).__rmul__(1 - self.decay)
+        x_k = -lr * self.direction + SFTuckerRiemannian.TangentVector(x_k).__rmul__(1 - self.decay * lr)
         x_k = x_k.construct().round(self.rank)
 
         W.data.add_(x_k.core - W)
