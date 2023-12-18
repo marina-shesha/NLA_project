@@ -4,7 +4,6 @@
 
 Knowledge graphs (KGs) are large graph-structured databases that store facts in triple form, representing interlinked descriptions of entities, relationships, and semantic descriptions. These KGs provide structured knowledge that plays a vital role in knowledge-aware tasks such as recommendation systems, intelligent question-answering, recommender systems, and social network analysis. The effectiveness of these tasks heavily relies on the quality and completeness of the KGs. However, KGs often suffer from incompleteness, resulting in significant knowledge gaps. To address this, it is crucial to enhance existing KGs by supplementing missing knowledge to improve their overall quality and usefulness.
 
-------------------------------
 ## Our project - Leveraging TuckER and Optimization for Knowledge Graph Link Prediction
 
 For this project, we utilize TuckER, a robust linear model based on Tucker decomposition of the binary tensor representation of knowledge graph triples. The implementation of TuckER can be found on GitHub at https://github.com/johanDDC/R-TuckER/tree/master. 
@@ -21,7 +20,6 @@ Additionally, we explore a range of optimization algorithms to enhance the perfo
 - RSGD with Momentum
 - Adam
 
---------------------------------
 ## Contribution to tackling the KG completion problem
 
 Our contribution consisted in implementing and extending several optimization methods using Riemann gradient, namely
@@ -32,7 +30,7 @@ Our contribution consisted in implementing and extending several optimization me
 - AdaDelta
 
 Moreover, we incorporated a smooth L1 loss, building upon the principles of Robust Low-Rank Matrix Completion through Riemannian Optimization. 
---------------------------------
+
 
 # Requirements 
 ## Dataset Requirements
